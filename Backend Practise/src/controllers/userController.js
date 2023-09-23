@@ -32,12 +32,14 @@ const postUser = async (req, res, next) => {
   const lastName = req.body.lastName;
   const gender = req.body.gender;
   const age = req.body.age;
+  const email = req.body.email;
   try {
     const user = new User({
       firstName,
       lastName,
       gender,
       age,
+      email,
     });
     const savedUser = await user.save();
     res.status(201).json({ message: "User Created", savedUser });
@@ -93,10 +95,25 @@ const updateUser = async (req, res, next) => {
   }
 };
 
+//Endpoint to check if USER IS AUTHENTICATED USING MIDDLEWEAR:
+const authenticatedUser = (req, res, next) => {
+  const userDetail = req.userDetail;
+  try {
+    if (!userDetail) {
+      res.status(404).json({ message: "Something is fishy!" });
+    } else {
+      res.status(200).json({ message: `Welcome ${userDetail.firstName}` });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 module.exports = {
   getUser,
   postUser,
   getSingleUser,
   deleteUser,
   updateUser,
+  authenticatedUser,
 };
