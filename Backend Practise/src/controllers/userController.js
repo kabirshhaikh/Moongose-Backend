@@ -1,5 +1,6 @@
 const express = require("express");
 const User = require("../model/User");
+const jwtHelper = require("../Jwt/jwtHelper");
 
 //Endpoint to GET ALL USERS
 const getUser = async (req, res, next) => {
@@ -98,11 +99,23 @@ const updateUser = async (req, res, next) => {
 //Endpoint to check if USER IS AUTHENTICATED USING MIDDLEWEAR:
 const authenticatedUser = (req, res, next) => {
   const userDetail = req.userDetail;
+  //Extract the token:
+  const token = req.headers.authorization;
   try {
-    if (!userDetail) {
-      res.status(404).json({ message: "Something is fishy!" });
+    //Decode the token:
+    const decodedUser = jwtHelper.verifyToken(token.slice(7));
+    if (!decodedUser) {
+      res.status(401).json({ message: "Unauthorized - Invalid Token" });
     } else {
-      res.status(200).json({ message: `Welcome ${userDetail.firstName}` });
+      if (userDetail.email === decodedUser.email) {
+        res.status(200).json({
+          message: `Welcome ${userDetail.firstName}, you can now access the endpoint!`,
+        });
+      } else {
+        res
+          .status(401)
+          .json({ message: "Unauthorized, User details not found!" });
+      }
     }
   } catch (err) {
     console.log(err);
